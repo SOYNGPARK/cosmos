@@ -135,30 +135,39 @@ solution(n)
 
 
 ########## 땅따먹기 ##########
+'''
+1. row-1번째 최댓값의 인덱스와 row번째 최댓값의 인덱스가 같을 때
+row-1번째 최댓값 + row번째 두번째 최댓값 / row-1번째 두번째 최댓값 + row번째 최댓값
+을 비교
+1-1. 두 수가 같으면, 두 경우에 대해서 각각 row-1, row번 째에서 선택(할당) 후 다음 재귀함수
+1-2. 두 수가 다르면, 큰 경우의 수를 row-1, row번 째에서 선택(할당) 후 다음 재귀함수
+2. row-1번째 최댓값의 인덱스와 row번째 최댓값의 인덱스가 다를 때
+row-1, row번 째에 각자의 최댓값 할당
+
+'''
 
 def solution(land):
-    
-    import copy
-    
-    def f(row, myland) :
+
+    def f(row, newland) :
         
-        print(row, myland)
-        
-        
-        if row == len(myland) :
+        if row == len(newland) :
             nonlocal land_size
-            land_size.append(-sum([l[0] for l in myland]))
+            land_size.append(-sum([l[0] for l in newland]))
             
         else :
-            newland = copy.deepcopy(myland)
+            copyland = copy.deepcopy(myland)
             
-            b_first = heapq.heappop(myland[row-1])
-            first = heapq.heappop(myland[row])
+            b_first = newland[row-1] if row > 1 else heapq.heappop(copyland[row-1])
+            first = heapq.heappop(copyland[row])
             
-            if b_first[1] == first[1] :
-                b_second = heapq.heappop(myland[row-1])
-                second = heapq.heappop(myland[row])
+            # 1 
+            if b_first[1] == first[1] : 
+                b_second = heapq.heappop(copyland[row-1])
+                while b_second[0] < b_first[0] or b_second == b_first :
+                    b_second = heapq.heappop(copyland[row-1])
+                second = heapq.heappop(copyland[row])
                 
+                # 1-1
                 if b_first[0] + second[0] == first[0] + b_second[0] :
                     
                     # row-1번째 값이 양보
@@ -167,45 +176,170 @@ def solution(land):
                     f(row+1, newland)
                     
                     # row번째 값이 양보
-                    newland[row-1] = first
-                    newland[row] = b_second
+                    newland[row-1] = b_second
+                    newland[row] = first
                     f(row+1, newland)
                 
-                else :
-                    newland[row-1] = b_first if b_first[0] + second[0] < first[0] + b_second[0] else first
-                    newland[row] = second if b_first[0] + second[0] < first[0] + b_second[0] else b_second
+                # 1-2
+                else : 
+                    newland[row-1] = b_first if b_first[0] + second[0] < first[0] + b_second[0] else b_second 
+                    newland[row] = second if b_first[0] + second[0] < first[0] + b_second[0] else first 
                     f(row+1, newland)
-                
-            else :
+            
+            # 2
+            else : # 인덱스가 다를 때
                 newland[row-1] = b_first
                 newland[row] = first
                 f(row+1, newland)
     
     # end of inner function
     
-    import heapq
     
-    myland = list()
-    for i, row in enumerate(land) :
-        hq = list()
-        for j, r in enumerate(row) :
-            heapq.heappush(hq, [-r,j])
-        myland.append(hq)
+    if len(land) == 1 :
+        answer = max(land[0])
+    
+    else :
+        import heapq, copy
         
-    land_size = list()
-    f(1, myland)
-       
-    answer = max(land_size)
-    
+        myland = list()
+        for i, row in enumerate(land) :
+            hq = list()
+            for j, r in enumerate(row) :
+                heapq.heappush(hq, [-r,j])
+            myland.append(hq)
+            
+        land_size = list()
+        newland = copy.deepcopy(myland)
+        
+        f(1, newland)
+           
+        answer = max(land_size)
+        
     return answer
 
 
 land = [[1,2,3,5],[5,6,7,8],[4,3,2,1]]	#16
 land = [[1,2,3,5],[5,6,7,9],[1,1,4,1]]	#16
-land = [[1,1,1,1]] #3
-land = [[9, 5, 2, 3], [9, 8, 6, 7], [8, 9, 7, 1], [100, 9, 8, 1]]
+land = [[1,1,1,1], [1,1,1,1], [1,1,1,1]] #1
+land = [[9, 5, 2, 3], [9, 8, 6, 7], [8, 9, 7, 1], [100, 9, 8, 1]] #125
 
 solution(land)
+
+
+
+########## 숫자의 표현 ##########
+
+def solution(n):
+    answer = 1
+    
+    import math
+    for i in range(math.ceil(n/2), 0, -1) :
+        result = 0
+        for j in range(i, 0, -1) :
+            result += j
+            if result == n :
+                answer += 1
+                break
+            elif result > n :
+                break         
+    
+    return answer
+
+
+########## 폰켓몬 ##########
+    
+def solution(nums):
+    answer = 0
+    
+    n = int(len(nums)/2) # 가져갈 폰켓몬의 수
+    k = len(set(nums)) # 폰켓몬 종류의 수
+    
+    if n <= k  : 
+        return n
+    else :
+        return k
+    
+    return answer
+
+
+nums = [3,1,2,3]	#2
+nums = [3,3,3,2,2,4]	#3
+nums = [3,3,3,2,2,2]	#2
+
+solution(nums)
+
+
+
+########## 네트워크 ##########
+
+
+
+def solution(n, computers):
+    answer = 0
+    coms = [i for i in range(n)]
+    
+    def networking(i) :
+    
+        nonlocal coms, answer
+        
+        coms.remove(i)
+    
+        print(i, computers[i], coms)
+    
+        computers[i][i] = 0
+        
+        if 1 in computers[i] :
+            i, j = computers[i].index(1), i
+            computers[j][i] = 0
+            computers[i][j] = 0
+
+            print("연결하자!")
+            print(computers)
+
+            networking(i)
+        
+        else :
+            answer += 1
+            
+            print("더 이상 연결할 곳이 없어!")
+            print(computers)
+            print(answer)
+            
+            if len(coms) != 0 :
+                networking(coms[-1])
+
+            
+            
+    if [1]*n in computers :
+        answer = 1
+    else :        
+        networking(0)
+
+    return answer    
+        
+        
+
+
+
+
+
+
+
+
+
+
+n, computers = 4, [[1, 0, 0, 1], [0, 1, 1, 1], [0, 1, 1, 0], [1, 1, 0, 1]] # 2
+n, computers = 3,	[[1, 0, 0], [0, 1, 0], [0, 0, 1]] # 1
+
+solution(n, computers)
+
+
+
+
+
+
+
+
 
 
 
